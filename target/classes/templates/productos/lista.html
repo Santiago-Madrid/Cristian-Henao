@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Productos</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="container">
+    <h1>Gestión de Productos</h1>
+
+    <div th:if="${mensaje}" class="alert alert-success">
+        <span th:text="${mensaje}"></span>
+    </div>
+
+    <div class="card">
+        <h2>Registrar Producto</h2>
+        <form th:action="@{/productos/guardar}" th:object="${producto}" method="post">
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" th:field="*{nombre}" placeholder="Nombre del producto">
+                <span class="error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></span>
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <input type="text" id="descripcion" th:field="*{descripcion}" placeholder="Descripción del producto">
+                <span class="error" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></span>
+            </div>
+            <div class="form-group">
+                <label for="precio">Precio</label>
+                <input type="number" id="precio" th:field="*{precio}" placeholder="0.00" step="0.01" min="0">
+                <span class="error" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Listado de Productos</h2>
+        <div th:if="${#lists.isEmpty(productos)}" class="empty">
+            No hay productos registrados.
+        </div>
+        <table th:unless="${#lists.isEmpty(productos)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="p : ${productos}">
+                    <td th:text="${p.id}"></td>
+                    <td th:text="${p.nombre}"></td>
+                    <td th:text="${p.descripcion}"></td>
+                    <td th:text="'$' + ${#numbers.formatDecimal(p.precio, 1, 2)}"></td>
+                    <td>
+                        <form th:action="@{/productos/eliminar/{id}(id=${p.id})}" method="post"
+                              onsubmit="return confirm('¿Desea eliminar este producto?')">
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
