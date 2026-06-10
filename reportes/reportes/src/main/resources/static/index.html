@@ -1,0 +1,58 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reportes</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+    .botones { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    button { cursor: pointer; padding: 0.6rem 1rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #0f172a; color: #fff; }
+    button:hover { background: #1e293b; }
+    #estado { color: #475569; font-size: 0.95rem; }
+    #resultado { white-space: pre-wrap; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Generador de reportes</h1>
+  <p id="estado">Seleccione un formato para generar el reporte.</p>
+  <div class="botones">
+    <button type="button" data-tipo="WHATSAPP">WhatsApp</button>
+    <button type="button" data-tipo="CORREO">Correo</button>
+    <button type="button" data-tipo="SMS">SMS</button>
+  </div>
+  <pre id="resultado">Esperando selección...</pre>
+
+  <script>
+    const estado = document.getElementById('estado');
+    const resultado = document.getElementById('resultado');
+    const params = new URLSearchParams(window.location.search);
+
+    function mostrarReporte(tipo) {
+      estado.textContent = 'Generando reporte ' + tipo + '...';
+      resultado.textContent = 'Cargando...';
+
+      fetch('/reportes/' + encodeURIComponent(tipo.toUpperCase()))
+        .then((res) => res.text().then((texto) => ({ ok: res.ok, texto })))
+        .then(({ ok, texto }) => {
+          if (!ok) {
+            throw new Error(texto || 'Error al generar el reporte');
+          }
+          resultado.textContent = texto;
+          estado.textContent = 'Reporte generado en formato ' + tipo.toUpperCase();
+        })
+        .catch((error) => {
+          resultado.textContent = error.message;
+          estado.textContent = 'No se pudo generar el reporte solicitado.';
+        });
+    }
+
+    const tipoInicial = (params.get('tipo') || 'WHATSAPP').toUpperCase();
+    mostrarReporte(tipoInicial);
+
+    document.querySelectorAll('button[data-tipo]').forEach((boton) => {
+      boton.addEventListener('click', () => mostrarReporte(boton.dataset.tipo));
+    });
+  </script>
+</body>
+</html>
